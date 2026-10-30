@@ -1,11 +1,19 @@
-from inf8239_u02.modeling import build_models
+from pathlib import Path
+import joblib
+
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-def test_each_pipeline_predicts_one_label():
-    texts = ["excelente servicio", "mala atención", "servicio rápido", "atención lenta"]
-    labels = ["positive", "negative", "positive", "negative"]
-    for model in build_models().values():
-        model.fit(texts, labels)
-        assert len(model.predict(["excelente atención"])) == 1
-        assert "tfidf" in model.named_steps
-        assert "model" in model.named_steps
+def test_text_model_exists_and_predicts():
+    model_path = BASE_DIR / "models" / "text_model.joblib"
+    assert model_path.exists(), "El archivo 'models/text_model.joblib' no existe. Ejecute scripts/train_text.py."
+
+    model = joblib.load(model_path)
+
+    # Probar predicciones
+    samples = ["Free entry to win a prize!", "Hey, call me when you get home."]
+    preds = model.predict(samples)
+
+    assert len(preds) == 2
+    assert preds[0] == "spam"
+    assert preds[1] == "ham"
